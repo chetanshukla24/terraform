@@ -38,6 +38,7 @@ resource "aws_security_group" "allow" {
     # Please restrict your ingress to only necessary IPs and ports.
     # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
     cidr_blocks = ["155.143.35.110/32"]
+    security_groups = ["${aws_security_group.elb.id}"]
     #source_security_group_id = "${aws_security_group.elb.id}"
   }
 
@@ -72,6 +73,8 @@ resource "aws_security_group" "elb" {
 
   }
   } 
+
+
 
 resource "aws_launch_configuration" "server" {
   name = "server"
