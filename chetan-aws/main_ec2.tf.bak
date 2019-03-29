@@ -1,0 +1,68 @@
+provider "aws" {
+
+  region = "ap-southeast-2"
+ }
+
+resource "aws_subnet" "main" {
+  vpc_id     = "vpc-1fd78d78"
+  cidr_block = "172.31.50.0/24"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "Default"
+  }
+}
+
+resource "aws_security_group" "allow" {
+  name        = "ssh-group"
+  description = "Allow SSH inbound traffic"
+
+  ingress {
+    # TLS (change to whatever ports you need)
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    # Please restrict your ingress to only necessary IPs and ports.
+    # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
+    cidr_blocks = ["155.143.35.110/32"]
+  }
+
+  ingress {
+    # TLS (change to whatever ports you need)
+    from_port   = "${var.server_port}"
+    to_port     = "${var.server_port}"
+    protocol    = "tcp"
+    # Please restrict your ingress to only necessary IPs and ports.
+    # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
+    cidr_blocks = ["155.143.35.110/32"]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+
+  }
+  } 
+
+resource "aws_instance" "server" {
+  ami = "ami-0b76c3b150c6b1423"
+  #ami = "${var.image}"
+  instance_type = "t2.micro"
+  subnet_id = "${aws_subnet.main.id}"
+  associate_public_ip_address = "true"
+  vpc_security_group_ids = ["${aws_security_group.allow.id}"]
+  monitoring = true
+
+  user_data = <<-EOF
+                #!/bin/bash
+                echo "Hello Chetan"  > index.html
+                nohup busybox httpd -f -p "${var.server_port}" &
+                EOF
+                
+  key_name = "terraform"
+  tags {
+    Name = "terraform"
+  }
+}
