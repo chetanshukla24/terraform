@@ -75,7 +75,6 @@ resource "aws_security_group" "elb" {
   } 
 
 
-
 resource "aws_launch_configuration" "server" {
   name = "server"
   image_id = "ami-0b76c3b150c6b1423"
@@ -118,6 +117,16 @@ resource "aws_launch_configuration" "server" {
      }
 
   }
+
+
+data "aws_instances" "test" {
+ 
+    filter {
+    name   = "image-id"
+    values = ["ami-0b76c3b150c6b1423"]
+    }
+  }
+  
 
 
   resource "aws_elb"  "example" {
